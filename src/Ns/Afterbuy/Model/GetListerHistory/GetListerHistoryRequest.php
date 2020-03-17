@@ -17,6 +17,14 @@ class GetListerHistoryRequest extends AbstractRequest
     const CALL_NAME = 'GetListerHistory';
 
     /**
+     * @Serializer\Type("integer")
+     * @Serializer\Accessor(getter="getMaxHistoryItems", setter="setMaxHistoryItems")
+     * @Serializer\SerializedName("MaxHistoryItems")
+     * @var int
+     */
+    protected $maxHistoryItems;
+
+    /**
      * @Serializer\Type("array<Ns\Afterbuy\Model\AbstractFilter>")
      * @Serializer\XmlList(entry="Filter")
      * @Serializer\SerializedName("DataFilter")

@@ -5,6 +5,7 @@ namespace Ns\Afterbuy\Client;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\BadResponseException;
+use Ns\Afterbuy\Model\GetListerHistory\Result;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
@@ -208,7 +209,7 @@ class Request implements LoggerAwareInterface
      * @param int $maxHistoryProducts
      * @param bool|true $enablePagination
      * @param int $detailLevel
-     * @return GetShopProductsResponse|null
+     * @return GetListerHistoryResponse|null
      */
     public function getListerHistory(array $filters = array(), $page = 1, $maxHistoryProducts = 250,
 		$enablePagination = true, $detailLevel = AfterbuyGlobal::DETAIL_LEVEL_PROCESS_DATA
