@@ -146,7 +146,7 @@ class Product extends AbstractModel
     protected $stock;
 
     /**
-     * @Serializer\Type("boolean")
+     * @Serializer\Type("integer")
      * @Serializer\SerializedName("Discontinued")
      * @var bool
      */
