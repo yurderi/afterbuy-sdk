@@ -59,10 +59,12 @@ class Request implements LoggerAwareInterface
      * @var LoggerInterface
      */
     protected $logger;
+
     /**
      * @var ClientInterface
      */
     protected $client;
+
     /**
      * @var SerializerInterface
      */
@@ -76,6 +78,16 @@ class Request implements LoggerAwareInterface
     protected $uri = 'https://api.afterbuy.de/afterbuy/ABInterface.aspx';
 
     /**
+     * @var string
+     */
+    protected $xmlRequest;
+
+    /**
+     * @var string
+     */
+    protected $xmlResponse;
+
+    /**
      * @param string $userId
      * @param string $userPassword
      * @param int    $partnerId
@@ -87,16 +99,17 @@ class Request implements LoggerAwareInterface
     {
         AnnotationRegistry::registerLoader('class_exists');
 
-        $this->afterbuyGlobal = new AfterbuyGlobal($userId, $userPassword, $partnerId, $partnerPassword, $errorLanguage);
-        $this->client = new \GuzzleHttp\Client(array('base_uri' => $this->uri));
+        $this->afterbuyGlobal =
+            new AfterbuyGlobal($userId, $userPassword, $partnerId, $partnerPassword, $errorLanguage);
+        $this->client         = new \GuzzleHttp\Client([ 'base_uri' => $this->uri ]);
 
         $builder = SerializerBuilder::create()
             ->configureHandlers(self::getHandlerConfiguration());
 
         if ($doctypeWhitelist) {
             $namingStrategy = new SerializedNameAnnotationStrategy(new CamelCaseNamingStrategy());
-            $xmlSerVisitor = new XmlSerializationVisitor($namingStrategy);
-            $xmlDesVisitor = new XmlDeserializationVisitor($namingStrategy);
+            $xmlSerVisitor  = new XmlSerializationVisitor($namingStrategy);
+            $xmlDesVisitor  = new XmlDeserializationVisitor($namingStrategy);
             $xmlDesVisitor->setDoctypeWhitelist($doctypeWhitelist);
             $builder->setSerializationVisitor('xml', $xmlSerVisitor)
                 ->setDeserializationVisitor('xml', $xmlDesVisitor);
@@ -140,12 +153,28 @@ class Request implements LoggerAwareInterface
     }
 
     /**
+     * @return string
+     */
+    public function getXmlRequest()
+    {
+        return $this->xmlRequest;
+    }
+
+    /**
+     * @return string
+     */
+    public function getXmlResponse()
+    {
+        return $this->xmlResponse;
+    }
+
+    /**
      * @param AbstractFilter[] $filters
      * @param int              $detailLevel
      *
      * @return GetPaymentServicesResponse|null
      */
-    public function getPaymentServices(array $filters = array(), $detailLevel = AfterbuyGlobal::DETAIL_LEVEL_PROCESS_DATA)
+    public function getPaymentServices(array $filters = [], $detailLevel = AfterbuyGlobal::DETAIL_LEVEL_PROCESS_DATA)
     {
         $request = (new GetPaymentServicesRequest($this->afterbuyGlobal))
             ->setFilters($filters)
@@ -166,6 +195,7 @@ class Request implements LoggerAwareInterface
 
         return $this->serializeAndSubmitRequest($request, GetShippingServicesResponse::class);
     }
+
     /**
      * @param array $filters
      * @param int   $detailLevel
@@ -182,63 +212,71 @@ class Request implements LoggerAwareInterface
     }
 
     /**
-     * @param array $filters
-     * @param int $page
-     * @param int $maxShopProducts
+     * @param array     $filters
+     * @param int       $page
+     * @param int       $maxShopProducts
      * @param bool|true $enablePagination
-     * @param int $detailLevel
+     * @param int       $detailLevel
+     *
      * @return GetShopProductsResponse|null
      */
-    public function getShopProducts(array $filters = array(), $page = 1, $maxShopProducts = 250,
-		$enablePagination = true, $detailLevel = AfterbuyGlobal::DETAIL_LEVEL_PROCESS_DATA
-	)
-    {
+    public function getShopProducts(
+        array $filters = [],
+        $page = 1,
+        $maxShopProducts = 250,
+        $enablePagination = true,
+        $detailLevel = AfterbuyGlobal::DETAIL_LEVEL_PROCESS_DATA
+    ) {
         $request = (new GetShopProductsRequest($this->afterbuyGlobal))
             ->setFilters($filters)
             ->setDetailLevel($detailLevel)
             ->setMaxShopItems($maxShopProducts)
-            ->setPaginationEnabled((int) $enablePagination)
-            ->setPageNumber($page)
-            ;
+            ->setPaginationEnabled((int)$enablePagination)
+            ->setPageNumber($page);
 
         return $this->serializeAndSubmitRequest($request, GetShopProductsResponse::class);
     }
 
     /**
-     * @param array $filters
-     * @param int $page
-     * @param int $maxHistoryProducts
+     * @param array     $filters
+     * @param int       $page
+     * @param int       $maxHistoryProducts
      * @param bool|true $enablePagination
-     * @param int $detailLevel
+     * @param int       $detailLevel
+     *
      * @return GetShopProductsResponse|null
      */
-    public function getListerHistory(array $filters = array(), $page = 1, $maxHistoryProducts = 250,
-		$enablePagination = true, $detailLevel = AfterbuyGlobal::DETAIL_LEVEL_PROCESS_DATA
-	)
-    {
+    public function getListerHistory(
+        array $filters = [],
+        $page = 1,
+        $maxHistoryProducts = 250,
+        $enablePagination = true,
+        $detailLevel = AfterbuyGlobal::DETAIL_LEVEL_PROCESS_DATA
+    ) {
         $request = (new GetListerHistoryRequest($this->afterbuyGlobal))
             ->setFilters($filters)
             ->setDetailLevel($detailLevel)
-            ->setMaxHistoryItems($maxHistoryProducts)
-            ;
+            ->setMaxHistoryItems($maxHistoryProducts);
+
         return $this->serializeAndSubmitRequest($request, GetListerHistoryResponse::class);
     }
 
     /**
      * @param array $filters
-     * @param int $maxCatalogs
-     * @param int $detailLevel
+     * @param int   $maxCatalogs
+     * @param int   $detailLevel
+     *
      * @return GetShopCatalogsResponse|null
      */
-    public function getShopCatalogs(array $filters = array(), $maxCatalogs = 200,
-		$detailLevel = AfterbuyGlobal::DETAIL_LEVEL_PROCESS_DATA
-	)
-    {
+    public function getShopCatalogs(
+        array $filters = [],
+        $maxCatalogs = 200,
+        $detailLevel = AfterbuyGlobal::DETAIL_LEVEL_PROCESS_DATA
+    ) {
         $request = (new GetShopCatalogsRequest($this->afterbuyGlobal))
             ->setFilters($filters)
             ->setDetailLevel($detailLevel)
-            ->setMaxCatalogs($maxCatalogs)
-            ;
+            ->setMaxCatalogs($maxCatalogs);
 
         return $this->serializeAndSubmitRequest($request, GetShopCatalogsResponse::class);
     }
@@ -251,10 +289,12 @@ class Request implements LoggerAwareInterface
      *
      * @return GetSoldItemsResponse|null
      */
-    public function getSoldItems(array $filters = array(), $orderDirection = false,
-		$maxSoldItems = 250, $detailLevel = AfterbuyGlobal::DETAIL_LEVEL_PROCESS_DATA
-	)
-    {
+    public function getSoldItems(
+        array $filters = [],
+        $orderDirection = false,
+        $maxSoldItems = 250,
+        $detailLevel = AfterbuyGlobal::DETAIL_LEVEL_PROCESS_DATA
+    ) {
         $request = (new GetSoldItemsRequest($this->afterbuyGlobal))
             ->setFilters($filters)
             ->setDetailLevel($detailLevel)
@@ -265,31 +305,33 @@ class Request implements LoggerAwareInterface
     }
 
     /**
-     * @param array			   $productIds
-     * @param int              $itemsCount
-     * @param float            $itemsWeight
-     * @param float            $itemsPrice
-     * @param string           $shippingCountry
-     * @param string           $shippingGroup
-     * @param int              $detailLevel
+     * @param array  $productIds
+     * @param int    $itemsCount
+     * @param float  $itemsWeight
+     * @param float  $itemsPrice
+     * @param string $shippingCountry
+     * @param string $shippingGroup
+     * @param int    $detailLevel
      *
      * @return GetSoldItemsResponse|null
      */
-    public function getShippingCost( array $productIds, $itemsCount = 1,
-		$itemsWeight = 1000, $itemsPrice = 1, $shippingCountry = null,
-		$shippingGroup = null,
-		$detailLevel = AfterbuyGlobal::DETAIL_LEVEL_PROCESS_DATA
-	)
-    {
+    public function getShippingCost(
+        array $productIds,
+        $itemsCount = 1,
+        $itemsWeight = 1000,
+        $itemsPrice = 1,
+        $shippingCountry = null,
+        $shippingGroup = null,
+        $detailLevel = AfterbuyGlobal::DETAIL_LEVEL_PROCESS_DATA
+    ) {
         $request = (new GetShippingCostRequest($this->afterbuyGlobal))
-            ->setDetailLevel( $detailLevel )
-			->setItemsCount( $itemsCount )
-			->setItemsWeight( new \Ns\Afterbuy\Model\FloatType( $itemsWeight ) )
-			->setItemsPrice( new \Ns\Afterbuy\Model\FloatType( $itemsPrice ) )
-			->setShippingCountry( $shippingCountry )
-			->setShippingGroup( $shippingGroup )
-			->setProducts( $productIds )
-            ;
+            ->setDetailLevel($detailLevel)
+            ->setItemsCount($itemsCount)
+            ->setItemsWeight(new \Ns\Afterbuy\Model\FloatType($itemsWeight))
+            ->setItemsPrice(new \Ns\Afterbuy\Model\FloatType($itemsPrice))
+            ->setShippingCountry($shippingCountry)
+            ->setShippingGroup($shippingGroup)
+            ->setProducts($productIds);
 
         return $this->serializeAndSubmitRequest($request, GetShippingCostResponse::class);
     }
@@ -305,6 +347,7 @@ class Request implements LoggerAwareInterface
     public function getAfterbuyTime()
     {
         $request = (new GetAfterbuyTimeRequest($this->afterbuyGlobal));
+
         return $this->serializeAndSubmitRequest($request, GetAfterbuyTimeResponse::class);
     }
 
@@ -341,11 +384,11 @@ class Request implements LoggerAwareInterface
     /**
      * Logs to a logger, when given
      *
-     * @param string|LogLevel  $level
-     * @param string $message
-     * @param array  $context
+     * @param string|LogLevel $level
+     * @param string          $message
+     * @param array           $context
      */
-    protected function log($level, $message, array $context = array())
+    protected function log($level, $message, array $context = [])
     {
         if ($this->logger) {
             $this->logger->log($level, $message, $context);
@@ -360,8 +403,10 @@ class Request implements LoggerAwareInterface
      */
     protected function serializeAndSubmitRequest(AbstractRequest $request, $type)
     {
-        $xml = $this->serializer->serialize($request, 'xml');
-        $options = array('body' => $xml, '_conditional' => array('Content-Type' => 'text/xml'));
+        $xml              = $this->serializer->serialize($request, 'xml');
+        $this->xmlRequest = $xml;
+
+        $options = [ 'body' => $xml, '_conditional' => [ 'Content-Type' => 'text/xml' ] ];
         $this->log(LogLevel::DEBUG, 'Posted to Afterbuy with the following options: ', $options);
 
         try {
@@ -374,21 +419,25 @@ class Request implements LoggerAwareInterface
         }
 
         if ($response->getStatusCode() != 200) {
-            $this->log(LogLevel::ERROR, sprintf('Afterbuy responded with HTTP status code %d', $response->getStatusCode()));
+            $this->log(
+                LogLevel::ERROR,
+                sprintf('Afterbuy responded with HTTP status code %d', $response->getStatusCode())
+            );
 
             return null;
         }
+
+        $this->xmlResponse = (string)$response->getBody();
+
         try {
             /** @var AbstractResponse $object */
-            $object = $this->serializer->deserialize((string) $response->getBody(), $type, 'xml');
+            $object = $this->serializer->deserialize((string)$response->getBody(), $type, 'xml');
         } catch (\Exception $exception) {
             $this->log(LogLevel::ERROR, $exception->getMessage());
-//			pr( (string)$response->getBody() );
+
+            //			pr( (string)$response->getBody() );
             return null;
         }
-
-        $object->setXmlRequest($xml);
-        $object->setXmlResponse((string) $response->getBody());
 
         return $object;
     }
