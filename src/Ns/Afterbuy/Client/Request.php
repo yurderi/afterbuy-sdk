@@ -379,12 +379,16 @@ class Request implements LoggerAwareInterface
             return null;
         }
         try {
+            /** @var AbstractResponse $object */
             $object = $this->serializer->deserialize((string) $response->getBody(), $type, 'xml');
         } catch (\Exception $exception) {
             $this->log(LogLevel::ERROR, $exception->getMessage());
 //			pr( (string)$response->getBody() );
             return null;
         }
+
+        $object->setXmlRequest($xml);
+        $object->setXmlResponse((string) $response->getBody());
 
         return $object;
     }

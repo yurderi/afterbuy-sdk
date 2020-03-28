@@ -31,6 +31,16 @@ class AbstractResponse extends AbstractModel
     protected $versionId;
 
     /**
+     * @var string
+     */
+    protected $xmlRequest;
+
+    /**
+     * @var string
+     */
+    protected $xmlResponse;
+
+    /**
      * @return string
      */
     public function getCallStatus()
@@ -53,4 +63,37 @@ class AbstractResponse extends AbstractModel
     {
         return $this->versionId;
     }
+
+    /**
+     * @return string
+     */
+    public function getXmlRequest()
+    {
+        return $this->xmlRequest;
+    }
+
+    /**
+     * @param string $xmlRequest
+     */
+    public function setXmlRequest($xmlRequest)
+    {
+        $this->xmlRequest = $xmlRequest;
+    }
+
+    /**
+     * @return string
+     */
+    public function getXmlResponse()
+    {
+        return $this->xmlResponse;
+    }
+
+    /**
+     * @param string $xmlResponse
+     */
+    public function setXmlResponse($xmlResponse)
+    {
+        $this->xmlResponse = $xmlResponse;
+    }
+
 }
